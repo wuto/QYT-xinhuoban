@@ -16,6 +16,9 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SafeWebViewClient extends WebViewClient {
 
     WebActivity.IWebViewInterface iWebViewInterface;
@@ -65,7 +68,20 @@ public class SafeWebViewClient extends WebViewClient {
             return true;
         }
 
-        view.loadUrl(url);
+        if (url.startsWith("weixin://wap/pay?")) {
+            //如果return false  就会先提示找不到页面，然后跳转微信
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(url));
+            activity.startActivity(intent);
+            return true;
+        } else {
+            //H5微信支付要用，不然说"商家参数格式有误"
+            Map<String, String> extraHeaders = new HashMap<String, String>();
+//            extraHeaders.put("Referer", "http://wxpay.wxutil.com");
+            extraHeaders.put("Referer", "http://pay.xinyigouhuoban.com/");
+            view.loadUrl(url, extraHeaders);
+        }
         return true;
     }
 
